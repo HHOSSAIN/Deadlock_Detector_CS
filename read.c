@@ -316,8 +316,12 @@ int main(int argc, char** argv){
 
         //deadlocks(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list);
         deadlock_detector(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list, loop_number);
-        printf("CHECKING Terminating LIST= %u\n\n", terminate_process_list->head->file);
-        //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+        printf("CHECKING Terminating LIST:\n");
+
+        if(terminate_process_list->head != NULL){
+            printf("CHECKING Terminating LIST= %u\n\n", terminate_process_list->head->file);
+            //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+        }
         print_processes_to_terminate(terminate_process_list);
 
 
@@ -761,19 +765,26 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                         return;
                     }
 
-                    //null can only happen if it is a resource
+                    //null can only happen if it is a resource..ignore this comment
                     if(process_or_resource == NULL){
                         p = p->next;
+
+                        if(p == NULL){ //eta ekhane use na koRLE SEG FAULT COZ WE CAN'T FIND SMALLEST PID FOR NULL TYPE PROCESS AT THE END
+                            return;
+                        }
+
+                        process_t* process_or_resource = (process_t*) p;
                         counter = 0;
                         //not sure if we should change the loop number here
                         loop_number += 1;
+                        printf("STARTING NEW LOOP: LOOP NUM=%d , PROCES=%u \n\n", loop_number, p->file);
 
 
                         smallest_process = p;
                         smallest_pid = p->file; 
 
                         deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process_or_resource, terminate_process_list, loop_number);
-                        //return;
+                        return;
                     }
 
                     if ( (counter % 2)==0 ){ //making sure it's a process
@@ -787,8 +798,10 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                         if( !(visited_process_check(process_stack,  *process)) ){
                             push_process(process_stack, *process, loop_number); //when we push to the stack, we should also pass the loop number so that we can compare
+                            printf("PUSHED PROCESS =%u\n", process->file);
                             counter += 1;
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list, loop_number);
+                            return; //testing for res7
 
                         }
 
@@ -821,15 +834,39 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                             smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
                             printf("NEW PROCESS FOR NEW LOOP IS %u AND NEW SMALLEST PROCESS IS %u\n\n", p->file, smallest_process->file);
                             //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
-                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, p, terminate_process_list, loop_number);
+                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+                            return;
                         }   
                     }
 
                     else{
                         resource_t* r = (resource_t*) process_or_resource;
-                        process_t* process = r->heldBy ;
+                        printf("GOT INTO RESOURCE NUM=%u\n", r->resource);
+                        process_t* process = r->heldBy ; //say res7 er last a eta null..p=400
+
+                        //adding for res7
+                        if(process == NULL){
+                            p = p->next;
+                            if(p == NULL){ //eta ekhane use na koRLE SEG FAULT COZ WE CAN'T FIND SMALLEST PID FOR NULL TYPE PROCESS AT THE END
+                                printf("ARRIVED AT END OF PROCESS LIST\n");
+                                return;
+                            }
+                            
+                            process = p;
+                            loop_number += 1; //even if it's not a deadlock, we still want to start a new loop coz the adjacency list of the process has already been visited
+                            counter = 0;
+
+                            smallest_process = p;
+                            smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
+                            printf("NEW PROCESS FOR NEW LOOP IS %u AND NEW SMALLEST PROCESS IS %u\n\n", p->file, smallest_process->file);
+                            //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+                            return;
+                        }
+
                         counter += 1;
                         deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+                        return;
                     }
 
                 }
