@@ -102,27 +102,28 @@ void print_processes_to_terminate(list_process_t* terminate_process_list);
 //void challenge_deadlock_avoider(list_process_t* list, int total_processes);
 int challenge_deadlock_avoider(list_process_t* list, int total_processes);
 
+//void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t* lp, resource_t* r, process_t* p);
 
 int main(int argc, char** argv){
     //format1: ./detect -f resources.txt
     //format2: ./detect -e -f resources.txt
     int execution_time = 1; //coz 2nd col er shobai unique, so guaranteed time from that column is 1
-    int current_mutual_maxtime=0; //prolly better to make it unsigned int
+    //int current_mutual_maxtime=0; //prolly better to make it unsigned int
     unsigned long long int resource_val;
     int node_type_marker = 0;
 
     /*format 1*/
-    FILE* file; int lines =0;
+    FILE* file; //int lines =0;
     char* tmp = malloc(sizeof(char)*5);
     char* ptr;
 
     list_process_t* list_process = make_empty_list_process();
-    list_process_t* list_terminating_process = make_empty_list_process();
+    //list_process_t* list_terminating_process = make_empty_list_process();
     list_resource_t* list_resource = make_empty_list_resource();
 
     process_t* p =(process_t*)  malloc(sizeof(process_t)*SIZE);
-    int p_size = SIZE; //handle realloc
-    int r_size = SIZE;
+    //int p_size = SIZE; //handle realloc
+    //int r_size = SIZE;
 
     resource_t* r =(resource_t*) malloc(sizeof(resource_t)*SIZE);
     resource_t* task2_r;
@@ -132,11 +133,32 @@ int main(int argc, char** argv){
     assert(p);
     assert(r);
 
+    int arguments = argc; 
+    int f_flag=0, e_flag=0, c_flag=0;
+    char* filename;
+    printf("ARGUMENTS=%d\n\n", arguments);
+    for(int i=0; i<arguments; i++){
+        //f flag er porer tai filename hobe
+        if((strcmp(argv[i], "-f") == 0)){
+            filename = argv[i+1];
+            f_flag = 1;
+        }
+        else if((strcmp(argv[i], "-e") == 0)){
+            e_flag = 1;
+        }
+        else if((strcmp(argv[i], "-c") == 0)){
+            c_flag = 1;
+        }
+    }
+    printf("f_flag=%d, e_flag=%d, c_flag=%d, filename=%s\n", f_flag, e_flag, c_flag, filename);
+
     //printf("test= %d\n", lines);
-    if((strcmp(argv[1], "-f") == 0)){
-        file = fopen(argv[2], "r");
-        int c=0, count=0, spaces=0, filenum=0, resourcenum=0; //lines=0; //lines=processes
-        int p_size=SIZE, r_size=SIZE;
+    //if((strcmp(argv[1], "-f") == 0)){
+    if(f_flag){
+        //file = fopen(argv[2], "r");
+        file = fopen(filename, "r");
+        int c=0, count=0, spaces=0; //filenum=0; //resourcenum=0; //lines=0; //lines=processes
+        //int p_size=SIZE, r_size=SIZE;
 
         /*On Windows, lines in text files are separated by \r\n, not just \n*/
         while ( (c=fgetc(file)) !=EOF ){ //last line er '\n' er time a ber hoye jai, so last line count 
@@ -171,8 +193,8 @@ int main(int argc, char** argv){
                             //printf("TASK2 TEST: %d\n", test);
                             int testt = traverse_resource_exist(list_resource, resource_val, &task2_r);
                             if(testt == 1){
-                                printf("\nEXISTING RESOURCE NUM= %u\n\n", resource_val);
-                                printf("RESOURCE= %u\n", task2_r->resource );                                
+                                printf("\nEXISTING RESOURCE NUM= %llu\n\n", resource_val);
+                                printf("RESOURCE= %llu\n", task2_r->resource );                                
                                 list_process->foot->lock1 = list_resource->foot; //lock1 pointing to resource1...after that we add resource2 to the resource list
                                 list_process->foot->lock2 = task2_r;
 
@@ -188,16 +210,16 @@ int main(int argc, char** argv){
                                 r->next = NULL;
 
 
-                                printf("resource1= %u, ", list_resource->foot->resource);
-                                printf("process=%u, res1=%u\n", list_process->foot->file, list_resource->foot->resource );
+                                printf("resource1= %llu, ", list_resource->foot->resource);
+                                printf("process=%llu, res1=%llu\n", list_process->foot->file, list_resource->foot->resource );
 
                                 list_process->foot->lock1 = list_resource->foot; //lock1 pointing to resource1...after that we add resource2 to the resource list
 
                                 list_resource = insert_at_foot_resource(list_resource, r );
-                                printf("resource= %u\n", r->resource);
+                                printf("resource= %llu\n", r->resource);
                                 //printf("resource1= %u, ", r[resourcenum -2].resource);
-                                printf("resource2= %u\n", list_resource->foot->resource);
-                                printf("process=%u, res2=%u\n", list_process->foot->file, list_resource->foot->resource );
+                                printf("resource2= %llu\n", list_resource->foot->resource);
+                                printf("process=%llu, res2=%llu\n", list_process->foot->file, list_resource->foot->resource );
 
                                 list_process->foot->lock2 = r;
                                 //printf("TASK2 CHECKKKK FOR HELDBY")
@@ -238,7 +260,7 @@ int main(int argc, char** argv){
                         assert(p);
                         p->file = strtoll(tmp, 0L, 10);
                         p->next = NULL;
-                        printf("file= %u\n", p->file); //file refers to process
+                        printf("file= %llu\n", p->file); //file refers to process
                         list_process = insert_at_foot_process(list_process, p );
                         count = 0;
 
@@ -253,12 +275,12 @@ int main(int argc, char** argv){
                         resource_val = strtoll(tmp, &ptr, 10);
                         if(list_resource != NULL){
                             if(traverse_resource_exist(list_resource, resource_val, &task2_r) == 1){
-                                printf("\nEXISTING RESOURCE NUMMM= %u\n", resource_val);
-                                printf("RESOURCE= %u\n", task2_r->resource );
+                                printf("\nEXISTING RESOURCE NUMMM= %llu\n", resource_val);
+                                printf("RESOURCE= %llu\n", task2_r->resource );
 
                                 //task2_r->heldBy = list_process->foot; //already heldBy blocked by prev process
                                 //task2_r->next = NULL;
-                                printf("resource= %u, process holding the resource= %u\n", task2_r->resource, list_process->foot->file);
+                                printf("resource= %llu, process holding the resource= %llu\n", task2_r->resource, list_process->foot->file);
                                 task2_r->heldBy = list_process->foot;
                                 printf("\nNOT INSERTED AGAIN IN RESOURCE LIST\n\n");
                                 //list_resource = insert_at_foot_resource(list_resource, r ); already in list
@@ -274,7 +296,7 @@ int main(int argc, char** argv){
                                 r->resource= strtoll(tmp, 0L, 10);
                                 r->heldBy = list_process->foot;
                                 r->next = NULL;
-                                printf("resource= %u, process holding the resource= %u\n", r->resource, list_process->foot->file);
+                                printf("resource= %llu, process holding the resource= %llu\n", r->resource, list_process->foot->file);
                                 list_resource = insert_at_foot_resource(list_resource, r );
                                 printf("\nINSERTED IN RESOURCE LIST\n\n");
                             }
@@ -289,10 +311,10 @@ int main(int argc, char** argv){
         resource_t* ress = list_resource->head;    
         while(ress->next != NULL){
             if(ress->heldBy != NULL){
-                printf("check:: resource= %u, process holding the resource= %u\n", ress->resource,  ress->heldBy->file);
+                printf("check:: resource= %llu, process holding the resource= %llu\n", ress->resource,  ress->heldBy->file);
             }
             ress = ress->next;
-            printf("next ress= %u\n", ress->resource);
+            printf("next ress= %llu\n", ress->resource);
             //printf("check2:: resource= %u, process holding the resource= %u\n", ress->resource,  ress->heldBy->file);
         }
 
@@ -311,28 +333,29 @@ int main(int argc, char** argv){
         //bujhe, so looks for "lock2", else looks for "heldBy"        
         }*/
         //node_type_marker
-        int loop_number = 1;
-        printf("node type marker=%d\n", node_type_marker);
-        //process_t process = list_process ->head; 
-        unsigned long long int smallest_process_id = 0;
-        unsigned long long int counter = 0; //for checking if it's process or resource
-        process_t* task3_process = list_process->head;
-        list_process_t* terminate_process_list= make_empty_list_process();
+        if(e_flag == 0){
+            int loop_number = 1;
+            printf("node type marker=%d\n", node_type_marker);
+            //process_t process = list_process ->head; 
+            //unsigned long long int smallest_process_id = 0;
+            //unsigned long long int counter = 0; //for checking if it's process or resource
+            process_t* task3_process = list_process->head;
+            list_process_t* terminate_process_list= make_empty_list_process();
 
-        int check = 0;
-        stack_process_t* visited_process_stack = makeStack();
-        assert(visited_process_stack);
+            //int check = 0;
+            stack_process_t* visited_process_stack = makeStack();
+            assert(visited_process_stack);
 
-        //deadlocks(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list);
-        deadlock_detector(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list, loop_number);
-        printf("CHECKING Terminating LIST:\n");
+            //deadlocks(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list);
+            deadlock_detector(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list, loop_number);
+            printf("CHECKING Terminating LIST:\n");
 
-        if(terminate_process_list->head != NULL){
-            printf("CHECKING Terminating LIST= %u\n\n", terminate_process_list->head->file);
-            //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+            if(terminate_process_list->head != NULL){
+                printf("CHECKING Terminating LIST= %llu\n\n", terminate_process_list->head->file);
+                //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+            }
+            print_processes_to_terminate(terminate_process_list);
         }
-        print_processes_to_terminate(terminate_process_list);
-
 
 
 
@@ -340,11 +363,12 @@ int main(int argc, char** argv){
 
 
         //CHALLENGE TASK
-        int total_processes = traverse_count_process(list_process);
-        int challenge_exec_time = 0;
-        challenge_exec_time = challenge_deadlock_avoider(list_process, total_processes);
-        printf("SIMULATION TIME IS %d\n\n", challenge_exec_time);
-
+        if(c_flag){
+            int total_processes = traverse_count_process(list_process);
+            int challenge_exec_time = 0;
+            challenge_exec_time = challenge_deadlock_avoider(list_process, total_processes);
+            printf("SIMULATION TIME IS %d\n\n", challenge_exec_time);
+        }
 
 
 
@@ -352,62 +376,64 @@ int main(int argc, char** argv){
 
         /*task2,3- calculating execution time and detecting deadlock*/
         //int node_type_marker = 0; //prolly better to make it unsigned
-        int waitlist_activator = 0;
 
-        //need to make a stack?
+        if(e_flag){
+            int waitlist_activator = 0;
+
+            //need to make a stack?
 
 
-        //iteration/traversal to start from a process
-        process_t* process = list_process ->head; 
-        /*given that there is no deadlock for task 2, it is guaranteed in such case that there is at least 1 resource/file in the last column which is not
-          present in the 2nd last column */
-        execution_time += 1; //t=2 hoilo here as col 2 er jonno t=1,then col 3 er kichu resource er jonoo it moves to t=2
+            //iteration/traversal to start from a process
+            process_t* process = list_process ->head; 
+            /*given that there is no deadlock for task 2, it is guaranteed in such case that there is at least 1 resource/file in the last column which is not
+            present in the 2nd last column */
+            execution_time += 1; //t=2 hoilo here as col 2 er jonno t=1,then col 3 er kichu resource er jonoo it moves to t=2
 
-        //we are bothered to check time from last columnn as col 1's time can be predetermined
-        while(process != NULL){
-            printf("p->count = %d\n", process->count);
-            if(process->count < 1){
-                printf("got in\n");
-                if(process->lock2->heldBy == NULL){
-                    //printf("held by process: %u\n", process->lock2->heldBy->file);
-                    printf("resource held: %u\n", process->lock2->resource);
-                    process->lock1 = process->lock2;            
-                    process->lock1->heldBy = process; //updating the resource's "heldby"
-                    process->count += 1;
-                    printf("successful3\n");
-                }
-                //else{
-                    //printf()
-                //}
-            //}
-            //printf("successful2/\n");
-            //process = process->next;
-        //}
-                else{
-                    //execution_time += 1;
-                    printf("resource held in else: %u\n", process->lock2->resource);
-                    if( !(process->lock2->waitlist_alloced) ){ //what's the difference between waitlist_alloced and waitlist_activator?
-                        //process->lock2->waitlist = (process_t*) malloc(sizeof(process_t)*5); 
-                        waitlist_activator = 1; //eta 1 thakle we will try finding the length of this list, else we skip
-                        //assert(process->lock2->waitlist);
-                        process->lock2->waitlist_tracker = make_empty_list_process();
-                        process->lock2->waitlist_alloced = 1; //eta 1 means list er malloc done, r malloc lagbe na
+            //we are bothered to check time from last columnn as col 1's time can be predetermined
+            while(process != NULL){
+                printf("p->count = %d\n", process->count);
+                if(process->count < 1){
+                    printf("got in\n");
+                    if(process->lock2->heldBy == NULL){
+                        //printf("held by process: %u\n", process->lock2->heldBy->file);
+                        printf("resource held: %llu\n", process->lock2->resource);
+                        process->lock1 = process->lock2;            
+                        process->lock1->heldBy = process; //updating the resource's "heldby"
+                        process->count += 1;
+                        printf("successful3\n");
                     }
-                    //if( (process->lock2->waitlist_size + 1) == (process->lock2->waitlist_alloced) ){ //prolly use sizeof()/sizeof()
-                        //realloc
+                    //else{
+                        //printf()
                     //}
-                    //insert at foot function banate hobe for each waitlist
-                    process->lock2->waitlist_tracker = insert_at_foot_process_waitlist(process->lock2->waitlist_tracker, process );
+                //}
+                //printf("successful2/\n");
+                //process = process->next;
+            //}
+                    else{
+                        //execution_time += 1;
+                        printf("resource held in else: %llu\n", process->lock2->resource);
+                        if( !(process->lock2->waitlist_alloced) ){ //what's the difference between waitlist_alloced and waitlist_activator?
+                            //process->lock2->waitlist = (process_t*) malloc(sizeof(process_t)*5); 
+                            waitlist_activator = 1; //eta 1 thakle we will try finding the length of this list, else we skip
+                            //assert(process->lock2->waitlist);
+                            process->lock2->waitlist_tracker = make_empty_list_process();
+                            process->lock2->waitlist_alloced = 1; //eta 1 means list er malloc done, r malloc lagbe na
+                        }
+                        //if( (process->lock2->waitlist_size + 1) == (process->lock2->waitlist_alloced) ){ //prolly use sizeof()/sizeof()
+                            //realloc
+                        //}
+                        //insert at foot function banate hobe for each waitlist
+                        process->lock2->waitlist_tracker = insert_at_foot_process_waitlist(process->lock2->waitlist_tracker, process );
+                    }
                 }
+                process = process->next;
             }
-            process = process->next;
+            //traverse thorugh the resources to find the longest waitlist
+            if(waitlist_activator){
+                printf("finding longest waitlist: size=%d\n", traverse_find_longest_waitlist(list_resource) );
+                execution_time += traverse_find_longest_waitlist(list_resource); 
+            }
         }
-        //traverse thorugh the resources to find the longest waitlist
-        if(waitlist_activator){
-            printf("finding longest waitlist: size=%d\n", traverse_find_longest_waitlist(list_resource) );
-            execution_time += traverse_find_longest_waitlist(list_resource); 
-        }
-        
 
         /*while(!feof(file)){
             fscanf(file, "%d", &temp);
@@ -428,7 +454,9 @@ int main(int argc, char** argv){
     int z2 = traverse_count_resource(list_resource);
     printf("total process= %d\n", z1);
     printf("total resources= %d\n", z2);
-    printf("execution time= %d\n", execution_time);
+    if(e_flag){
+        printf("execution time= %d\n", execution_time);
+    }
     printf("node type marker=%d\n", node_type_marker);
     ///printf("%u\n", )
 
@@ -463,11 +491,11 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	} else {
 		list->foot->next = value;
 		list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	}
 	return list;
 }
@@ -478,11 +506,11 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("Terminating process list check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("Terminating process list check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	} else {
 		list->foot->terminating_next = value;
 		list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	}
 	return list;
 }
@@ -493,11 +521,11 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	} else {
 		list->foot->waitlist_next = value;
 		list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
 	}
 	return list;
 }
@@ -508,11 +536,11 @@ list_resource_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->resource, list->foot->resource);
+        printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource);
 	} else {
 		list->foot->next = value;
 		list->foot = value;
-        printf("func check: head= %u, foot= %u\n", list->head->resource, list->foot->resource);
+        printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource);
 	}
 	return list;
 }
@@ -524,18 +552,21 @@ int traverse_count_process(list_process_t *list){
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %u\n", new->file);
+		printf("traverse= %llu\n", new->file);
 		new = new->next;
 	}
     return count;
 }
+
+/*used to find the length of process waitlist, which is basically list of processes that
+  are waiting to lock a particular resource*/
 int traverse_count_process_waitlist(list_process_t *list){
 	process_t *new;
     int count = 0;
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %u\n", new->file);
+		printf("traverse= %llu\n", new->file);
 		//new = new->next;
         new = new->waitlist_next;
 	}
@@ -547,7 +578,7 @@ int traverse_count_resource(list_resource_t *list){
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %u, ", new->resource);
+		printf("traverse= %llu, ", new->resource);
 		new = new->next;
 	}
     return count;
@@ -631,9 +662,9 @@ void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t
 
                                 //r[resourcenum++].resource= atoi(tmp);
 
-                                printf("resource= %u\n", r[resourcenum -1].resource);
-                                printf("resource1= %u, ", r[resourcenum -2].resource);
-                                printf("resource2= %u\n", r[resourcenum -1].resource);
+                                printf("resource= %llu\n", r[resourcenum -1].resource);
+                                printf("resource1= %llu, ", r[resourcenum -2].resource);
+                                printf("resource2= %llu\n", r[resourcenum -1].resource);
 
                                 //printf("resource= %lu\n", r[resourcenum -1].resource);
                                 //printf("resource= %d\n", r[resourcenum -1].resource);
@@ -644,8 +675,8 @@ void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t
                                 p[filenum -1].lock2 = &(r[resourcenum - 1]);
                                 r[resourcenum -2].heldBy = &(p[filenum -1] );
 
-                                printf("process=%u, res1=%u\n", (p[filenum-1].file), (*(&(r[resourcenum - 2]))).resource );
-                                printf("process=%u, res1=%u, res2=%u\n",
+                                printf("process=%llu, res1=%llu\n", (p[filenum-1].file), (*(&(r[resourcenum - 2]))).resource );
+                                printf("process=%llu, res1=%llu, res2=%llu\n",
                                     (p[filenum-1].file),  (*(p[filenum-1].lock1)).resource, (*(p[filenum-1].lock2)).resource );
                                 //printf("process=%u, resource_locked=%u, resource_req=%u\n", 
                                         //(p[filenum-1].file), p[filenum - 1].lock1->resource, p[filenum - 2].lock2->resource );
@@ -679,7 +710,7 @@ void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t
                             //p[filenum++].file = strtoul(tmp, 0L, 10); //typecasting issue
                             //p[filenum++].file = atoi(tmp); //typecasting issue
                             //printf("file= %d\n", p[filenum - 1].file); //file refers to process
-                            printf("file= %u\n", p[filenum - 1].file); //file refers to process
+                            printf("file= %llu\n", p[filenum - 1].file); //file refers to process
                             lp = insert_at_foot_process(lp, &(p[filenum - 1]) );
                             count = 0;
                         }
@@ -690,7 +721,7 @@ void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t
                             r[resourcenum - 1].next = NULL;
                             lr = insert_at_foot_resource(lr, &(r[resourcenum - 1]) );
                             //r[resourcenum++].resource= atoi(tmp);
-                            printf("resource= %u\n", r[resourcenum -1].resource);
+                            printf("resource= %llu\n", r[resourcenum -1].resource);
                             count = 0;
                         }
                     }
@@ -759,7 +790,7 @@ void print_processes_to_terminate(list_process_t* terminate_process_list){
     printf("PROCESSES TO TERMINATE ARE: ");
     process_t* process = terminate_process_list->head;
     while(process != NULL){
-        printf("%u, ", process->file);
+        printf("%llu, ", process->file);
         process = process->terminating_next;
     }
     
@@ -796,7 +827,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                         counter = 0;
                         //not sure if we should change the loop number here
                         loop_number += 1;
-                        printf("STARTING NEW LOOP: LOOP NUM=%d , PROCES=%u \n\n", loop_number, p->file);
+                        printf("STARTING NEW LOOP: LOOP NUM=%d , PROCES=%llu \n\n", loop_number, p->file);
 
 
                         smallest_process = p;
@@ -812,12 +843,12 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                         if(process->file < smallest_pid){
                             smallest_pid = process->file;
                             smallest_process = process;
-                            printf("CURRENT SMALLEST PROCESS IS %u\n\n", smallest_pid);
+                            printf("CURRENT SMALLEST PROCESS IS %llu\n\n", smallest_pid);
                         }
 
                         if( !(visited_process_check(process_stack,  *process)) ){
                             push_process(process_stack, *process, loop_number); //when we push to the stack, we should also pass the loop number so that we can compare
-                            printf("PUSHED PROCESS =%u\n", process->file);
+                            printf("PUSHED PROCESS =%llu\n", process->file);
                             counter += 1;
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list, loop_number);
                             return; //testing for res7
@@ -851,7 +882,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                             smallest_process = p;
                             smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
-                            printf("NEW PROCESS FOR NEW LOOP IS %u AND NEW SMALLEST PROCESS IS %u\n\n", p->file, smallest_process->file);
+                            printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file);
                             //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             return;
@@ -860,7 +891,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                     else{
                         resource_t* r = (resource_t*) process_or_resource;
-                        printf("GOT INTO RESOURCE NUM=%u\n", r->resource);
+                        printf("GOT INTO RESOURCE NUM=%llu\n", r->resource);
                         process_t* process = r->heldBy ; //say res7 er last a eta null..p=400
 
                         //adding for res7
@@ -877,7 +908,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                             smallest_process = p;
                             smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
-                            printf("NEW PROCESS FOR NEW LOOP IS %u AND NEW SMALLEST PROCESS IS %u\n\n", p->file, smallest_process->file);
+                            printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file);
                             //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             return;
@@ -895,11 +926,11 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
     process_t* process;
     int execution_time = 0;
     int terminated_processes = 0;
-    int new_loop =1; //
+    //int new_loop =1; //
     while(terminated_processes != total_processes){
         process = list->head;
         while(process != NULL){
-            printf("PROCESS=%u\n", process->file);
+            printf("PROCESS=%llu\n", process->file);
             if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
                 process = process->next;
                 if(process == NULL){ //means came at end of d process list
@@ -917,7 +948,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                 process->lock2->challenge_held_by = process;
                 process->challenge_process_terminated = 1;
                 terminated_processes += 1;
-                printf("time=%d process=%u, resource1=%u, resource2=%u\n", execution_time, process->file, process->lock1->resource, process->lock2->resource);
+                printf("time=%d process=%llu, resource1=%llu, resource2=%llu\n", execution_time, process->file, process->lock1->resource, process->lock2->resource);
 
                 process = process->next;
                 //printf("CURRENT PROCESS IS:%u\n", process->file);
@@ -927,7 +958,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                     break;
                 }
                 else{
-                    printf("CURRENT PROCESS IS:%u\n", process->file);
+                    printf("CURRENT PROCESS IS:%llu\n", process->file);
                     continue;
                 }
             }
@@ -945,7 +976,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
         //getting out of this while loop means we have traversed the whole list. so, now, we want to free the resources held by terminating processes from loop1
         process = list->head;
         while(process != NULL){
-            printf("GOTTT INNN....process=%u\n", process->file);
+            printf("GOTTT INNN....process=%llu\n", process->file);
             if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
                 process->lock1->challenge_held_by = NULL;
                 process->lock2->challenge_held_by = NULL;
@@ -959,13 +990,13 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                     break;
                 }
 
-                printf("NEXT 4m INSIDE IS....process=%u\n", process->file);
+                printf("NEXT 4m INSIDE IS....process=%llu\n", process->file);
                 continue;
             }
             else{
                 process = process->next;
                 if(process != NULL){
-                    printf("NEXT IS....process=%u\n", process->file);
+                    printf("NEXT IS....process=%llu\n", process->file);
                     continue;
                 }
                 else{
