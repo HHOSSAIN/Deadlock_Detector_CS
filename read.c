@@ -34,6 +34,9 @@ struct resource{
     list_process_t* waitlist_tracker;
     
     resource_t* next; //for linkedlist
+
+    //challenge task
+    process_t* challenge_held_by;
 };
 
 struct process{
@@ -49,7 +52,9 @@ struct process{
     process_t* waitlist_next;
     process_t* terminating_next;
     int loop_number;
-    
+
+    //challenge task
+    int challenge_process_terminated;
 };
 
 struct list_process{ 
@@ -92,6 +97,10 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                 void* process_or_resource, list_process_t* terminate_process_list, int loop_number);
 int loop_number_stack(stack_process_t* stack, process_t process);
 void print_processes_to_terminate(list_process_t* terminate_process_list);
+
+//challenge task
+//void challenge_deadlock_avoider(list_process_t* list, int total_processes);
+int challenge_deadlock_avoider(list_process_t* list, int total_processes);
 
 
 int main(int argc, char** argv){
@@ -330,6 +339,14 @@ int main(int argc, char** argv){
 
 
 
+        //CHALLENGE TASK
+        int total_processes = traverse_count_process(list_process);
+        int challenge_exec_time = 0;
+        challenge_exec_time = challenge_deadlock_avoider(list_process, total_processes);
+        printf("SIMULATION TIME IS %d\n\n", challenge_exec_time);
+
+
+
 
 
 
@@ -342,6 +359,8 @@ int main(int argc, char** argv){
 
         //iteration/traversal to start from a process
         process_t* process = list_process ->head; 
+        /*given that there is no deadlock for task 2, it is guaranteed in such case that there is at least 1 resource/file in the last column which is not
+          present in the 2nd last column */
         execution_time += 1; //t=2 hoilo here as col 2 er jonno t=1,then col 3 er kichu resource er jonoo it moves to t=2
 
         //we are bothered to check time from last columnn as col 1's time can be predetermined
@@ -870,3 +889,92 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                     }
 
                 }
+
+//void challenge_deadlock_avoider(list_process_t* list, int total_processes){
+int challenge_deadlock_avoider(list_process_t* list, int total_processes){
+    process_t* process;
+    int execution_time = 0;
+    int terminated_processes = 0;
+    int new_loop =1; //
+    while(terminated_processes != total_processes){
+        process = list->head;
+        while(process != NULL){
+            printf("PROCESS=%u\n", process->file);
+            if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
+                process = process->next;
+                if(process == NULL){ //means came at end of d process list
+                    execution_time += 1;
+                    break;
+                }
+
+                else{ //extra
+                    continue;
+                }
+            }
+
+            if( (process->lock1->challenge_held_by == NULL) && (process->lock2->challenge_held_by == NULL) ){
+                process->lock1->challenge_held_by = process;
+                process->lock2->challenge_held_by = process;
+                process->challenge_process_terminated = 1;
+                terminated_processes += 1;
+                printf("time=%d process=%u, resource1=%u, resource2=%u\n", execution_time, process->file, process->lock1->resource, process->lock2->resource);
+
+                process = process->next;
+                //printf("CURRENT PROCESS IS:%u\n", process->file);
+
+                if(process == NULL){ //means came at end of d process list
+                    execution_time += 1;
+                    break;
+                }
+                else{
+                    printf("CURRENT PROCESS IS:%u\n", process->file);
+                    continue;
+                }
+            }
+            process = process->next;
+            if(process == NULL){ //means came at end of d process list
+                execution_time += 1;
+                break;
+            }
+            else{
+                continue;
+            }
+            
+        }
+
+        //getting out of this while loop means we have traversed the whole list. so, now, we want to free the resources held by terminating processes from loop1
+        process = list->head;
+        while(process != NULL){
+            printf("GOTTT INNN....process=%u\n", process->file);
+            if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
+                process->lock1->challenge_held_by = NULL;
+                process->lock2->challenge_held_by = NULL;
+                process = process->next;
+
+                if(process != NULL){
+                    //printf("NEXT IS....process=%u\n", process->file);
+                    continue;
+                }
+                else{
+                    break;
+                }
+
+                printf("NEXT 4m INSIDE IS....process=%u\n", process->file);
+                continue;
+            }
+            else{
+                process = process->next;
+                if(process != NULL){
+                    printf("NEXT IS....process=%u\n", process->file);
+                    continue;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+    }
+    printf("SIMULATION TIME=%d\n\n", execution_time);
+    return execution_time;
+    //return;
+}
