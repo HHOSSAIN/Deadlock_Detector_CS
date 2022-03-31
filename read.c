@@ -754,6 +754,8 @@ void print_processes_to_terminate(list_process_t* terminate_process_list){
 void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
                 void* process_or_resource, list_process_t* terminate_process_list, int loop_number){
 
+                    //p and smallest_process are same at the start, i.e. both are the 1st process from the process's linked list
+
                     //done with looping through list of processes
                     if(p == NULL){
                         return;
@@ -766,12 +768,23 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                         //not sure if we should change the loop number here
                         loop_number += 1;
 
+
+                        smallest_process = p;
+                        smallest_pid = p->file; 
+
                         deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process_or_resource, terminate_process_list, loop_number);
                         //return;
                     }
 
-                    if ( (counter % 2)==0 ){
+                    if ( (counter % 2)==0 ){ //making sure it's a process
                         process_t* process = (process_t*) process_or_resource;
+
+                        if(process->file < smallest_pid){
+                            smallest_pid = process->file;
+                            smallest_process = process;
+                            printf("CURRENT SMALLEST PROCESS IS %u\n\n", smallest_pid);
+                        }
+
                         if( !(visited_process_check(process_stack,  *process)) ){
                             push_process(process_stack, *process, loop_number); //when we push to the stack, we should also pass the loop number so that we can compare
                             counter += 1;
@@ -784,8 +797,8 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                             //need to a comparison function to compare loop numbers
                             if( (loop_number_stack(process_stack, *process)) == loop_number ){ //mane this process was prev visited + part of same loop
                                 printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");    
-                                //terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
-                                terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, process); //only executed if deadlock found
+                                terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
+                                //terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, process); //only executed if deadlock found
                             }
                             
                             
@@ -793,10 +806,22 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                             //even if it's not a deadlock, we still want to start a new loop coz the adjacency list of the process has already been visited
                             p = p->next;
+
+                            
+                            if(p == NULL){ //eta ekhane use na koRLE SEG FAULT COZ WE CAN'T FIND SMALLEST PID FOR NULL TYPE PROCESS AT THE END
+                                return;
+                            }
+
+
                             process = p;
                             loop_number += 1; //even if it's not a deadlock, we still want to start a new loop coz the adjacency list of the process has already been visited
                             counter = 0;
-                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+
+                            smallest_process = p;
+                            smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
+                            printf("NEW PROCESS FOR NEW LOOP IS %u AND NEW SMALLEST PROCESS IS %u\n\n", p->file, smallest_process->file);
+                            //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
+                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, p, terminate_process_list, loop_number);
                         }   
                     }
 
