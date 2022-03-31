@@ -91,6 +91,7 @@ list_process_t* insert_at_foot_terminating_process(list_process_t *list, process
 void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
                 void* process_or_resource, list_process_t* terminate_process_list, int loop_number);
 int loop_number_stack(stack_process_t* stack, process_t process);
+void print_processes_to_terminate(list_process_t* terminate_process_list);
 
 
 int main(int argc, char** argv){
@@ -317,6 +318,7 @@ int main(int argc, char** argv){
         deadlock_detector(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list, loop_number);
         printf("CHECKING Terminating LIST= %u\n\n", terminate_process_list->head->file);
         //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+        print_processes_to_terminate(terminate_process_list);
 
 
 
@@ -730,6 +732,19 @@ int loop_number_stack(stack_process_t* stack, process_t process){
     }
     return loop_number;
 }
+void print_processes_to_terminate(list_process_t* terminate_process_list){ 
+    printf("PROCESSES TO TERMINATE ARE: ");
+    process_t* process = terminate_process_list->head;
+    while(process != NULL){
+        printf("%u, ", process->file);
+        process = process->terminating_next;
+    }
+    
+    /*for(int i=0; i< stack->used; i++){
+        printf("%u, ", stack->stack[i].file);
+    } */
+    printf("\n\n");
+}
 
 
 
@@ -769,7 +784,8 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                             //need to a comparison function to compare loop numbers
                             if( (loop_number_stack(process_stack, *process)) == loop_number ){ //mane this process was prev visited + part of same loop
                                 printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");    
-                                terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
+                                //terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
+                                terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, process); //only executed if deadlock found
                             }
                             
                             
