@@ -1,0 +1,1 @@
+Unlike sequential allocation, my algorithm lets processes who have no common resources or files associated with them run concurrently. Therefore, many processes that would be waiting for execution in sequential allocation gets executed concurrently, which would greatly reduce the simulation time compared to sequential allocation.
