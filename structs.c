@@ -462,3 +462,39 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
     return execution_time;
     //return;
 }
+
+void
+free_list_process(list_process_t *list) {
+	process_t *curr, *prev;
+	assert(list!=NULL);
+	curr = list->head;
+	while (curr) {
+		prev = curr; //prev initially not pointing to anything
+		curr = curr->next;
+		free(prev);
+	}
+	free(list);
+}
+
+void
+free_list_resource(list_resource_t *list) {
+	resource_t *curr, *prev;
+	assert(list!=NULL);
+	curr = list->head;
+	while (curr) {
+		prev = curr; //prev initially not pointing to anything
+		curr = curr->next;
+        if(prev->waitlist_tracker){
+            free(prev->waitlist_tracker);
+        }
+		free(prev);
+	}
+	free(list);
+}
+
+void free_visited_process_stack(stack_process_t* stack){
+    if(stack->stack){
+        free(stack->stack);
+    }
+    free(stack);
+}

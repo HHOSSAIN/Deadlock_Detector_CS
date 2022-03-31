@@ -97,5 +97,8 @@ void print_processes_to_terminate(list_process_t* terminate_process_list);
 //void challenge_deadlock_avoider(list_process_t* list, int total_processes);
 int challenge_deadlock_avoider(list_process_t* list, int total_processes);
 
+void free_list_process(list_process_t *list);
+void free_list_resource(list_resource_t *list);
+void free_visited_process_stack(stack_process_t* stack);
 
 #endif
