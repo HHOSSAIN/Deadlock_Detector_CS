@@ -196,35 +196,8 @@ int main(int argc, char** argv){
 
                             
 
-                            //list_process->foot->lock2->heldBy = list_process->foot;
-                            //printf("TEST FOR TASK 2: PROCESS ER LOCK2 ER RESOURCE HELD BY: ");
-                            //if(list_process->foot->lock2->heldBy)
-
-                            //r[resourcenum -1].heldBy = NULL;
-
-                            //r[resourcenum++].resource= strtoul(tmp, &ptr, 10);
-                            //r[resourcenum++].resource= strtoul(tmp, NULL, 0);
-
-                            //r[resourcenum++].resource= atoi(tmp);
-
-                            /*printf("resource= %u\n", r[resourcenum -1].resource);
-                            printf("resource1= %u, ", r[resourcenum -2].resource);
-                            printf("resource2= %u\n", r[resourcenum -1].resource); */
-
-                            //printf("resource= %lu\n", r[resourcenum -1].resource);
-                            //printf("resource= %d\n", r[resourcenum -1].resource);
+                            
                             count = 0;
-
-                            //associating files to process and vice versa
-                            //p[filenum -1].lock1 = &(r[resourcenum - 2]); //transferred to test
-                            //p[filenum -1].lock2 = &(r[resourcenum - 1]); //task 2...transferred to test
-                            //r[resourcenum -2].heldBy = &(p[filenum -1] ); //task 2
-
-                            /* printf("process=%u, res1=%u\n", (p[filenum-1].file), (*(&(r[resourcenum - 2]))).resource ); //transferred to test
-                            printf("process=%u, res1=%u, res2=%u\n",
-                                 (p[filenum-1].file),  (*(p[filenum-1].lock1)).resource, (*(p[filenum-1].lock2)).resource ); //transferred to test  */
-                            //printf("process=%u, resource_locked=%u, resource_req=%u\n", 
-                                    //(p[filenum-1].file), p[filenum - 1].lock1->resource, p[filenum - 2].lock2->resource );
                         }
 
 
@@ -249,16 +222,6 @@ int main(int argc, char** argv){
                     tmp[count]='\0';
                     printf("tmp= %s %d, spaces=%d\n", tmp, atoi(tmp), spaces);
                     if( (spaces+1)%2 == 0){ //odd space mane it's a process
-                    //if(spaces == 1){
-
-                        /*p[filenum++].file = strtoll(tmp, 0L, 10); //typecasting issue
-                        p[filenum - 1].next = NULL;
-                        //p[filenum++].file = strtoul(tmp, 0L, 10); //typecasting issue
-                        //p[filenum++].file = atoi(tmp); //typecasting issue
-                        //printf("file= %d\n", p[filenum - 1].file); //file refers to process
-                        printf("file= %u\n", p[filenum - 1].file); //file refers to process
-                        list_process = insert_at_foot_process(list_process, &(p[filenum - 1]) );
-                        count = 0; */
 
                         /*test*/
                         process_t* p = (process_t*) malloc(sizeof(process_t));
@@ -306,16 +269,6 @@ int main(int argc, char** argv){
                                 printf("\nINSERTED IN RESOURCE LIST\n\n");
                             }
                         }   
-
-
-                        //r[resourcenum - 1].next = NULL;
-
-                        //r[resourcenum -1].heldBy = &(p[filenum - 1]);
-                        //printf("resource= %u, process holding the resource= %u\n", r[resourcenum-1].resource, r[resourcenum-1].heldBy->file);
-
-                        //list_resource = insert_at_foot_resource(list_resource, &(r[resourcenum - 1]) );
-                        //r[resourcenum++].resource= atoi(tmp);
-                        //printf("resource= %u\n", r[resourcenum -1].resource);
 
                         count = 0;
                     }
