@@ -14,6 +14,9 @@
 #define DEFAULTSIZE 2
 
 //void read_and_process(FILE* file, char* tmp, list_resource_t* lr, list_process_t* lp, resource_t* r, process_t* p);
+void free_list_process(list_process_t *list);
+void free_list_resource(list_resource_t *list);
+void free_visited_process_stack(stack_process_t* stack);
 
 int main(int argc, char** argv){
 
@@ -24,22 +27,25 @@ int main(int argc, char** argv){
 
     /*format 1*/
     FILE* file; //int lines =0;
-    char* tmp = malloc(sizeof(char)*5);
+
+    char* tmp = malloc(sizeof(char)*SIZE);
+    unsigned long long int tmp_size = SIZE;
+
     char* ptr;
 
     list_process_t* list_process = make_empty_list_process();
     //list_process_t* list_terminating_process = make_empty_list_process();
     list_resource_t* list_resource = make_empty_list_resource();
 
-    process_t* p =(process_t*)  malloc(sizeof(process_t)*SIZE);
+    //process_t* p =(process_t*)  malloc(sizeof(process_t)*SIZE);
 
-    resource_t* r =(resource_t*) malloc(sizeof(resource_t)*SIZE);
+    //resource_t* r =(resource_t*) malloc(sizeof(resource_t)*SIZE);
     resource_t* task2_r;
 
 
     assert(tmp);
-    assert(p);
-    assert(r);
+    //assert(p);
+    //assert(r);
 
     int arguments = argc; 
     int f_flag=0, e_flag=0, c_flag=0;
@@ -127,6 +133,11 @@ int main(int argc, char** argv){
                     }
 
                     else{
+                        if(count+2 > tmp_size){
+                            tmp_size = tmp_size*2;
+                            tmp = (char*) realloc(tmp, sizeof(char)*tmp_size);
+                            assert(tmp);
+                        }
                         tmp[count++] = c;
 
                         /*PRINT COMMANDS FOR DEBUGGING*/
@@ -239,6 +250,8 @@ int main(int argc, char** argv){
             if(c_flag == 0){
                 print_processes_to_terminate(terminate_process_list);
             }
+            free(terminate_process_list);
+            free_visited_process_stack(visited_process_stack);
         }
 
 
@@ -277,7 +290,7 @@ int main(int argc, char** argv){
                         //updating the resource's "heldby"          
                         process->lock1->heldBy = process; 
                         process->count += 1;
-                        printf("successful3\n"); 
+                        //printf("successful3\n"); 
                     }
                     
                     else{
@@ -312,6 +325,13 @@ int main(int argc, char** argv){
     }
 
     fclose(file);
+
+    /*FREEING*/
+    free_list_process(list_process);
+    free_list_resource(list_resource);
+    free(tmp);
+    //free(terminate_pro)
+
 
     return 0;
 }
@@ -409,3 +429,38 @@ int main(int argc, char** argv){
     }
  } */
 
+void
+free_list_process(list_process_t *list) {
+	process_t *curr, *prev;
+	assert(list!=NULL);
+	curr = list->head;
+	while (curr) {
+		prev = curr; //prev initially not pointing to anything
+		curr = curr->next;
+		free(prev);
+	}
+	free(list);
+}
+
+void
+free_list_resource(list_resource_t *list) {
+	resource_t *curr, *prev;
+	assert(list!=NULL);
+	curr = list->head;
+	while (curr) {
+		prev = curr; //prev initially not pointing to anything
+		curr = curr->next;
+        if(prev->waitlist_tracker){
+            free(prev->waitlist_tracker);
+        }
+		free(prev);
+	}
+	free(list);
+}
+
+void free_visited_process_stack(stack_process_t* stack){
+    if(stack->stack){
+        free(stack->stack);
+    }
+    free(stack);
+}
