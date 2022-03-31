@@ -47,6 +47,7 @@ struct process{
     resource_t* lock2;
     process_t* next;
     process_t* waitlist_next;
+    process_t* terminating_next;
     
 };
 
@@ -82,8 +83,14 @@ list_process_t *insert_at_foot_process_waitlist(list_process_t *list, process_t*
 
 //task-3
 stack_process_t* makeStack();
-void push_process(stack_process_t* stack, process_t item);
+//void push_process(stack_process_t* stack, process_t item);
+stack_process_t* push_process(stack_process_t* stack, process_t item);
 int visited_process_check(stack_process_t* stack, process_t process);
+list_process_t* insert_at_foot_terminating_process(list_process_t *list, process_t* value);
+void deadlocks(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
+                void* process_or_resource, list_process_t* terminate_process_list);
+void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
+                void* process_or_resource, list_process_t* terminate_process_list);
 
 int main(int argc, char** argv){
     //format1: ./detect -f resources.txt
@@ -99,6 +106,7 @@ int main(int argc, char** argv){
     char* ptr;
 
     list_process_t* list_process = make_empty_list_process();
+    list_process_t* list_terminating_process = make_empty_list_process();
     list_resource_t* list_resource = make_empty_list_resource();
 
     process_t* p =(process_t*)  malloc(sizeof(process_t)*SIZE);
@@ -327,6 +335,43 @@ int main(int argc, char** argv){
             //printf("check:: resource= %u, process holding the resource= %u\n", r[1].resource, r[1].heldBy->file);
         //}
 
+
+
+
+
+
+        //TASK-3
+        /*if(node_type_marker==0 || ((node_type_marker + 1)%3 == 0) ){ //means it is process_t node
+        //if process, then go to process->lock2. if resource, go to heldby
+        //process and resource will keep alternating between them, so we can have a counter such that even val hoile process
+        //bujhe, so looks for "lock2", else looks for "heldBy"        
+        }*/
+        //node_type_marker
+        printf("node type marker=%d\n", node_type_marker);
+        //process_t process = list_process ->head; 
+        unsigned long long int smallest_process_id = 0;
+        unsigned long long int counter = 0; //for checking if it's process or resource
+        process_t* task3_process = list_process->head;
+        list_process_t* terminate_process_list= make_empty_list_process();
+
+        int check = 0;
+        stack_process_t* visited_process_stack = makeStack();
+        assert(visited_process_stack);
+
+        //deadlocks(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list);
+        deadlock_detector(task3_process, task3_process, visited_process_stack, 0, task3_process->file, task3_process, terminate_process_list);
+        
+        //printf("TERMINATE PROCESS=%u\n", terminate_process_list->head->file);
+
+
+
+
+
+
+
+
+
+
         /*task2,3- calculating execution time and detecting deadlock*/
         //int node_type_marker = 0; //prolly better to make it unsigned
         int waitlist_activator = 0;
@@ -382,105 +427,7 @@ int main(int argc, char** argv){
             printf("finding longest waitlist: size=%d\n", traverse_find_longest_waitlist(list_resource) );
             execution_time += traverse_find_longest_waitlist(list_resource); 
         }
-
-
-        //TASK-3
-        /*if(node_type_marker==0 || ((node_type_marker + 1)%3 == 0) ){ //means it is process_t node
-        //if process, then go to process->lock2. if resource, go to heldby
-        //process and resource will keep alternating between them, so we can have a counter such that even val hoile process
-        //bujhe, so looks for "lock2", else looks for "heldBy"        
-        }*/
-        //node_type_marker
-        printf("node type marker=%d\n", node_type_marker);
-        process = list_process ->head; 
-        unsigned long long int smallest_process_id = 0;
-        unsigned long long int counter = 0; //for checking if it's process or resource
-        process_t* task3_process = list_process->head;
-
-        int check = 0;
-        stack_process_t* visited_process_stack = makeStack();
-        assert(visited_process_stack);
-
-        //a stack or list to keep track of the nodes
-        //while (process != NULL){
-            /*if(process->file < smallest_process_id || (node_type_marker == 0) ){
-                smallest_process_id = process->file;
-            }*/
-
-
-            //1)account for storing the deadlock's process id
-            //2)ensure id stored is the smallest id
-            //3)
-            /*
-            void deadlocks(process_t* p, stack_process_t* process_stack, resource_stack, counter, void* process_or_resource){
-                void* node_type;
-                if ( (counter % 2)==0 ){
-                    if(process_or_resource == NULL){
-                        return;
-                    }
-                    (process_t*) process = (process_t*) process_or_resource_stack;
-                    if(process not in process_stack){
-                        push it;
-                    }
-                    if(process in process_stack){
-                        return deadlock;
-                    }
-                    counter += 1;
-                    deadlocks(process_list, process_stack, resource_stack, counter, void* process_or_resource->lock2);
-                }
-                else{  //i.e. counter value is odd...(counter+1)%2 == 0
-                    (resource_t*) r = (resource_t*) process_or_resource;
-                    process_t* process = process_or_resource->heldBy;
-                    if(process == NULL){
-                        process->next;
-                        counter += 1;
-                        deadlocks(process_list, process_stack, counter, process_resource)
-                    }
-                    else{
-                        counter += 1;
-                        deadlocks(process_list, process_stack, resource_stack, counter, void* process_or_resource);
-                    }
-                }
-
-                    push (process_t*) node_type->lock2 to resource stack
-                    counter += 1;
-                    deadlock(process_list, process_stack,  )
-               }
-
-                if (process->next == NULL){
-                    break or return;
-                }
-            }
-            */
-
-
-           // push_process(visited_process_stack, *process);
-            //if( !(visited_process_check(visited_process_stack, *(process->lock2->heldBy))) ){
-             //   push_process(visited_process_stack, *(process->lock2->heldBy) ); //amon akta recursion korte hobe such that it takes the last process
-                                                                                //inserted in the stack and oitar respect a cycle pawar try kore
-                                                                               //oi check shesh hoile we move next process in our linked list and see
-                                                                              //if it's in the stack. if it's in, we skip and move to next. 
-                                                                            //if it's not, then we repeat the recursion
-            //}
-            //if(process->lock2->heldBy)
-            
-
-            //if(visited_process_check(visited_process_stack, *process)){
-            //else{
-              //  printf("DEADLOCK FOUND HHEHEEHEHEH");
-            //}
-
-            //process = process->next;
-        //} //end of while loop
-
-        //unsigned long long int* a = (unsigned long long int*) malloc(sizeof(unsigned long long int)* (pow(2,(32)) - 1)  );
-        //unsigned int* a = (unsigned int*) malloc(sizeof(unsigned int) * (pow(2,(32)) - 1)  );
-        //assert(a);
         
-
-        //need a list or process to hold the processes and resources
-
-        //process->lock2
 
         /*while(!feof(file)){
             fscanf(file, "%d", &temp);
@@ -539,6 +486,21 @@ list_process_t
         printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
 	} else {
 		list->foot->next = value;
+		list->foot = value;
+        printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+	}
+	return list;
+}
+list_process_t
+*insert_at_foot_terminating_process(list_process_t *list, process_t* value) {
+	//process_t *new;
+
+	if (list->foot==NULL) {
+		/* this is the first insertion into the list */
+		list->head = list->foot = value;
+        printf("Terminating process list check: head= %u, foot= %u\n", list->head->file, list->foot->file);
+	} else {
+		list->foot->terminating_next = value;
 		list->foot = value;
         printf("func check: head= %u, foot= %u\n", list->head->file, list->foot->file);
 	}
@@ -774,7 +736,8 @@ struct stack_process{ //stack_process_t*
 };
 */
 
-void push_process(stack_process_t* stack, process_t item){
+//void push_process(stack_process_t* stack, process_t item){
+stack_process_t* push_process(stack_process_t* stack, process_t item){
     if(stack->alloced == 0){
 		stack->alloced = DEFAULTSIZE;
 		stack->stack = (process_t*) malloc(sizeof(process_t)*(stack->alloced));
@@ -787,6 +750,7 @@ void push_process(stack_process_t* stack, process_t item){
 	}
 	(stack->stack)[stack->used] = item; //stac->stack is an int arr.So stack->used is the pos of the arr
 	(stack->used)++;
+    return stack;
 }
 
 int visited_process_check(stack_process_t* stack, process_t process){
@@ -804,6 +768,84 @@ int visited_process_check(stack_process_t* stack, process_t process){
 
 
 //task3
+//task3
+void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
+                void* process_or_resource, list_process_t* terminate_process_list){
+                    if(process_or_resource == NULL){
+                        return;
+                    }
+
+                    if ( (counter % 2)==0 ){
+                        process_t* process = (process_t*) process_or_resource;
+                        if( !(visited_process_check(process_stack,  *process)) ){
+                            push_process(process_stack, *process);
+                            counter += 1;
+                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list);
+
+                        }
+
+                        else{
+                            printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");
+                            return;
+                        }   
+                    }
+
+                    else{
+                        resource_t* r = (resource_t*) process_or_resource;
+                        process_t* process = r->heldBy ;
+                        counter += 1;
+                        deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list);
+                    }
+
+                }
+
+
+
+void deadlocks(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
+                void* process_or_resource, list_process_t* terminate_process_list){
+
+
+    if(process_or_resource == NULL){
+                        return;
+    }
+
+    if ( (counter % 2)==0 ){
+        process_t* process = (process_t*) process_or_resource;
+        if( !(visited_process_check(process_stack,  *process)) ){
+
+            //check if this new process has the smallest id, i.e. if the "file" < smallest_pid
+            //if(process->file < smallest_pid || counter==0 ){
+            if(process->file < smallest_pid ){ //1st time deadlocks() call korar time ei give 1st process->file as smallest pid
+                smallest_pid = process->file;
+                //also maybe store the process with the smallest id insted????
+                smallest_process = process;
+            }
+
+            push_process(process_stack, *process);
+            counter += 1;
+            deadlocks(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list);
+        }
+        else{
+
+            //store the smallest pid in the array of processes which we would need to terminate to remove the deadlocks.
+            terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process);
+            //terminate_process[i] = smallest_pid;
+
+            p = p->next;
+            smallest_process = p;
+            counter = 0;
+            smallest_pid = p->file;
+            deadlocks(p, smallest_process, process_stack, counter, smallest_pid, p, terminate_process_list);
+        }
+    }
+    else{
+        resource_t* r = (resource_t*) process_or_resource;
+        process_t* process = r->heldBy ;
+        counter += 1;
+        deadlocks(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list);
+    }
+} 
+
 /*void deadlocks(process_t* p, stack_process_t* process_stack, resource_stack, counter, void* process_or_resource){
                 void* node_type;
                 if ( (counter % 2)==0 ){
@@ -812,28 +854,32 @@ int visited_process_check(stack_process_t* stack, process_t process){
                     }
                     (process_t*) process = (process_t*) process_or_resource_stack;
                     if(process not in process_stack){
-                        push it;
+                        //push it;
+                        process_stack = push_process(process_stack, *process);
                     }
                     if(process in process_stack){
+                    if( visited_process_check(process_stack, *process)){
+                        //add it to list of nodes that need to be terminated
+                        
                         return deadlock;
-                    }
+                    }                        
                     counter += 1;
+                    //deadlocks(process_list, process_stack, resource_stack, counter, void* process_or_resource->lock2);
                     deadlocks(process_list, process_stack, resource_stack, counter, void* process_or_resource->lock2);
                 }
                 else{  //i.e. counter value is odd...(counter+1)%2 == 0
                     (resource_t*) r = (resource_t*) process_or_resource;
                     process_t* process = process_or_resource->heldBy;
                     if(process == NULL){
-                        process->next;
+                        process = process->next;
                         counter += 1;
-                        deadlocks(process_list, process_stack, counter, process_resource)
+                        deadlocks(process, process_stack, resource_stack, counter, process_or_resource);
                     }
                     else{
                         counter += 1;
                         deadlocks(process_list, process_stack, resource_stack, counter, void* process_or_resource);
                     }
                 }
-
                     push (process_t*) node_type->lock2 to resource stack
                     counter += 1;
                     deadlock(process_list, process_stack,  )
