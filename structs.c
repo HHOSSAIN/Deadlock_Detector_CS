@@ -37,11 +37,11 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file); //IMPORTANT
 	} else {
 		list->foot->next = value;
 		list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file); //IMPORTANT
 	}
 	return list;
 }
@@ -52,11 +52,11 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("Terminating process list check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
+        //printf("Terminating process list check: head= %llu, foot= %llu\n", list->head->file, list->foot->file); //IMPORTANT
 	} else {
 		list->foot->terminating_next = value;
 		list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file); //IMPORTANT
 	}
 	return list;
 }
@@ -67,7 +67,7 @@ list_process_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->file, list->foot->file); //IMPORTANT
 	} else {
 		list->foot->waitlist_next = value;
 		list->foot = value;
@@ -82,11 +82,11 @@ list_resource_t
 	if (list->foot==NULL) {
 		/* this is the first insertion into the list */
 		list->head = list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource); //IMPORTANT
 	} else {
 		list->foot->next = value;
 		list->foot = value;
-        printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource);
+        //printf("func check: head= %llu, foot= %llu\n", list->head->resource, list->foot->resource); //IMPORTANT
 	}
 	return list;
 }
@@ -98,7 +98,8 @@ int traverse_count_process(list_process_t *list){
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %llu\n", new->file);
+		//printf("traverse= %llu\n", new->file);
+		//printf("traverse= %u\n", new->file); //IMPORTANT
 		new = new->next;
 	}
     return count;
@@ -112,7 +113,7 @@ int traverse_count_process_waitlist(list_process_t *list){
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %llu\n", new->file);
+		//printf("traverse= %llu\n", new->file); //IMPORTANT
 		//new = new->next;
         new = new->waitlist_next;
 	}
@@ -124,7 +125,7 @@ int traverse_count_resource(list_resource_t *list){
 	new =list->head; //head is a node pointer
 	while(new != NULL){
         count += 1;
-		printf("traverse= %llu, ", new->resource);
+		//printf("traverse= %llu, ", new->resource); //IMPORTANT
 		new = new->next;
 	}
     return count;
@@ -333,17 +334,22 @@ int loop_number_stack(stack_process_t* stack, process_t process){
     return loop_number;
 }
 void print_processes_to_terminate(list_process_t* terminate_process_list){ 
-    printf("PROCESSES TO TERMINATE ARE: ");
+    //printf("PROCESSES TO TERMINATE ARE: ");
+    if(terminate_process_list->head){
+        printf("Terminate");
+    }
     process_t* process = terminate_process_list->head;
     while(process != NULL){
-        printf("%llu, ", process->file);
+        printf(" %llu", process->file); //IMPORTANT
         process = process->terminating_next;
     }
     
     /*for(int i=0; i< stack->used; i++){
         printf("%u, ", stack->stack[i].file);
     } */
-    printf("\n\n");
+    if(terminate_process_list->head){
+        printf("\n");
+    }
 }
 
 
@@ -389,12 +395,12 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                         if(process->file < smallest_pid){
                             smallest_pid = process->file;
                             smallest_process = process;
-                            printf("CURRENT SMALLEST PROCESS IS %llu\n\n", smallest_pid);
+                            //printf("CURRENT SMALLEST PROCESS IS %llu\n\n", smallest_pid); //IMPORTANT
                         }
 
                         if( !(visited_process_check(process_stack,  *process)) ){
                             push_process(process_stack, *process, loop_number); //when we push to the stack, we should also pass the loop number so that we can compare
-                            printf("PUSHED PROCESS =%llu\n", process->file);
+                            //printf("PUSHED PROCESS =%llu\n", process->file); //IMPORTANT
                             counter += 1;
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list, loop_number);
                             return; //testing for res7
@@ -405,7 +411,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
                             //else a asha does not guarantee a deadlock
                             //need to a comparison function to compare loop numbers
                             if( (loop_number_stack(process_stack, *process)) == loop_number ){ //mane this process was prev visited + part of same loop
-                                printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");    
+                                //printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n"); //IMPORTANT
                                 terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
                                 //terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, process); //only executed if deadlock found
                             }
@@ -428,7 +434,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                             smallest_process = p;
                             smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
-                            printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file);
+                            //printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file); //IMPORTANT
                             //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             return;
@@ -437,14 +443,14 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                     else{
                         resource_t* r = (resource_t*) process_or_resource;
-                        printf("GOT INTO RESOURCE NUM=%llu\n", r->resource);
+                        //printf("GOT INTO RESOURCE NUM=%llu\n", r->resource); //IMPORTANT
                         process_t* process = r->heldBy ; //say res7 er last a eta null..p=400
 
                         //adding for res7
                         if(process == NULL){
                             p = p->next;
                             if(p == NULL){ //eta ekhane use na koRLE SEG FAULT COZ WE CAN'T FIND SMALLEST PID FOR NULL TYPE PROCESS AT THE END
-                                printf("ARRIVED AT END OF PROCESS LIST\n");
+                                //printf("ARRIVED AT END OF PROCESS LIST\n"); //IMPORTANT
                                 return;
                             }
                             
@@ -454,7 +460,7 @@ void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_
 
                             smallest_process = p;
                             smallest_pid = p->file; //i think this is what is causing the segmentation error as p null HOILE IT'S SEG FAULT
-                            printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file);
+                            //printf("NEW PROCESS FOR NEW LOOP IS %llu AND NEW SMALLEST PROCESS IS %llu\n\n", p->file, smallest_process->file); //IMPORTANT
                             //deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                             return;
@@ -476,7 +482,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
     while(terminated_processes != total_processes){
         process = list->head;
         while(process != NULL){
-            printf("PROCESS=%llu\n", process->file);
+            //printf("PROCESS=%llu\n", process->file); //IMPORTANT
             if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
                 process = process->next;
                 if(process == NULL){ //means came at end of d process list
@@ -494,7 +500,8 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                 process->lock2->challenge_held_by = process;
                 process->challenge_process_terminated = 1;
                 terminated_processes += 1;
-                printf("time=%d process=%llu, resource1=%llu, resource2=%llu\n", execution_time, process->file, process->lock1->resource, process->lock2->resource);
+                //printf("time=%d process=%llu, resource1=%llu, resource2=%llu\n", execution_time, process->file, process->lock1->resource, process->lock2->resource);
+                printf("%d %llu %llu, %llu\n", execution_time, process->file, process->lock1->resource, process->lock2->resource); //IMPORTANT
 
                 process = process->next;
                 //printf("CURRENT PROCESS IS:%u\n", process->file);
@@ -504,7 +511,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                     break;
                 }
                 else{
-                    printf("CURRENT PROCESS IS:%llu\n", process->file);
+                    //printf("CURRENT PROCESS IS:%llu\n", process->file); //IMPORTANT
                     continue;
                 }
             }
@@ -519,10 +526,11 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
             
         }
 
-        //getting out of this while loop means we have traversed the whole list. so, now, we want to free the resources held by terminating processes from loop1
+        /*getting out of this while loop means we have traversed the whole list. so, now, we want to free the resources
+          held by terminating processes from loop1 */
         process = list->head;
         while(process != NULL){
-            printf("GOTTT INNN....process=%llu\n", process->file);
+            //printf("GOTTT INNN....process=%llu\n", process->file); //IMPORTANT
             if(process->challenge_process_terminated){ //i.e. if the current process has already been terminated
                 process->lock1->challenge_held_by = NULL;
                 process->lock2->challenge_held_by = NULL;
@@ -536,13 +544,13 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
                     break;
                 }
 
-                printf("NEXT 4m INSIDE IS....process=%llu\n", process->file);
+                //printf("NEXT 4m INSIDE IS....process=%llu\n", process->file); //IMPORTANT
                 continue;
             }
             else{
                 process = process->next;
                 if(process != NULL){
-                    printf("NEXT IS....process=%llu\n", process->file);
+                    //printf("NEXT IS....process=%llu\n", process->file); //IMPORTANT
                     continue;
                 }
                 else{
@@ -551,7 +559,7 @@ int challenge_deadlock_avoider(list_process_t* list, int total_processes){
             }
         }
     }
-    printf("SIMULATION TIME=%d\n\n", execution_time);
+    //printf("SIMULATION TIME=%d\n", execution_time);
     return execution_time;
     //return;
 }
