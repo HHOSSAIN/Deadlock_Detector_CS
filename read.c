@@ -85,12 +85,12 @@ list_process_t *insert_at_foot_process_waitlist(list_process_t *list, process_t*
 //task-3
 stack_process_t* makeStack();
 //void push_process(stack_process_t* stack, process_t item);
-stack_process_t* push_process(stack_process_t* stack, process_t item);
+stack_process_t* push_process(stack_process_t* stack, process_t item, int loop_number);
 int visited_process_check(stack_process_t* stack, process_t process);
 list_process_t* insert_at_foot_terminating_process(list_process_t *list, process_t* value);
 void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
                 void* process_or_resource, list_process_t* terminate_process_list, int loop_number);
-
+int loop_number_stack(stack_process_t* stack, process_t process);
 
 
 int main(int argc, char** argv){
@@ -692,7 +692,7 @@ struct stack_process{ //stack_process_t*
 */
 
 //void push_process(stack_process_t* stack, process_t item){
-stack_process_t* push_process(stack_process_t* stack, process_t item){
+stack_process_t* push_process(stack_process_t* stack, process_t item, int loop_number){
     if(stack->alloced == 0){
 		stack->alloced = DEFAULTSIZE;
 		stack->stack = (process_t*) malloc(sizeof(process_t)*(stack->alloced));
@@ -703,6 +703,8 @@ stack_process_t* push_process(stack_process_t* stack, process_t item){
 			sizeof(process_t)*(stack->alloced));
 		assert(stack->stack);
 	}
+
+    item.loop_number = loop_number;
 	(stack->stack)[stack->used] = item; //stac->stack is an int arr.So stack->used is the pos of the arr
 	(stack->used)++;
     return stack;
@@ -718,6 +720,16 @@ int visited_process_check(stack_process_t* stack, process_t process){
     }
     return found;
 }
+int loop_number_stack(stack_process_t* stack, process_t process){
+    int loop_number=0;
+    for(int i=0; i< stack->used; i++){
+        if( (stack->stack)[i].file == process.file ){
+            loop_number = stack->stack[i].loop_number;
+            return loop_number;
+        }
+    }
+    return loop_number;
+}
 
 
 
@@ -726,23 +738,49 @@ int visited_process_check(stack_process_t* stack, process_t process){
 //task3
 void deadlock_detector(process_t* p, process_t* smallest_process, stack_process_t* process_stack, unsigned long long int counter, unsigned long long int smallest_pid, 
                 void* process_or_resource, list_process_t* terminate_process_list, int loop_number){
-                    if(process_or_resource == NULL){
+
+                    //done with looping through list of processes
+                    if(p == NULL){
                         return;
+                    }
+
+                    //null can only happen if it is a resource
+                    if(process_or_resource == NULL){
+                        p = p->next;
+                        counter = 0;
+                        //not sure if we should change the loop number here
+                        loop_number += 1;
+
+                        deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process_or_resource, terminate_process_list, loop_number);
+                        //return;
                     }
 
                     if ( (counter % 2)==0 ){
                         process_t* process = (process_t*) process_or_resource;
                         if( !(visited_process_check(process_stack,  *process)) ){
-                            push_process(process_stack, *process);
+                            push_process(process_stack, *process, loop_number); //when we push to the stack, we should also pass the loop number so that we can compare
                             counter += 1;
                             deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process->lock2, terminate_process_list, loop_number);
 
                         }
 
                         else{
-                            printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");
-                            terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process);
-                            return;
+                            //else a asha does not guarantee a deadlock
+                            //need to a comparison function to compare loop numbers
+                            if( (loop_number_stack(process_stack, *process)) == loop_number ){ //mane this process was prev visited + part of same loop
+                                printf("FOUNDDD DEADDDLOOOOCCKCK!!!!\n");    
+                                terminate_process_list = insert_at_foot_terminating_process(terminate_process_list, smallest_process); //only executed if deadlock found
+                            }
+                            
+                            
+                            //return;
+
+                            //even if it's not a deadlock, we still want to start a new loop coz the adjacency list of the process has already been visited
+                            p = p->next;
+                            process = p;
+                            loop_number += 1; //even if it's not a deadlock, we still want to start a new loop coz the adjacency list of the process has already been visited
+                            counter = 0;
+                            deadlock_detector(p, smallest_process, process_stack, counter, smallest_pid, process, terminate_process_list, loop_number);
                         }   
                     }
 
