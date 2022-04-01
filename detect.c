@@ -241,7 +241,9 @@ int main(int argc, char** argv){
                 }
             }
             else{
-                printf("No deadlocks\n");
+                if(c_flag == 0){
+                    printf("No deadlocks\n");
+                }
             }
 
             if(c_flag == 0){
