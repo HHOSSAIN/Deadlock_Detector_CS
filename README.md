@@ -1,3 +1,8 @@
+Built deadlock detector using C which determines whether given the current 
+resource allocation and requests, there is a deadlock or not. It suggests
+the processes to be terminated when there is a deadlock. In absence of
+deadlock, it calculates the execution time when there is no deadlock. DFS strategy used.
+
 ```
 ./detect -f testcases/task1/resources-0.txt | diff - testcases/task1/resources-0-out.txt
 ./detect -f testcases/task1/resources-1.txt | diff - testcases/task1/resources-1-out.txt
@@ -18,7 +23,4 @@
 ./detect -c -f testcases/task6/resources-ch-1.txt
 ./detect -c -f testcases/task6/resources-ch-2.txt
 ```
-Built deadlock detector using C which determines whether given the current 
-resource allocation and requests, there is a deadlock or not. It suggests
-the processes to be terminated when there is a deadlock. In absence of
-deadlock, it calculates the execution time when there is no deadlock.
+
